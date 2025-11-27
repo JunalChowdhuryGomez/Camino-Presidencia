@@ -1,3 +1,4 @@
+import os
 import pygame
 import random
 import sys
@@ -9,20 +10,31 @@ class Congresista(pygame.sprite.Sprite):
         super().__init__()
         self.es_jefe = es_jefe
         self.vida = 2 if es_jefe else 1 # El jefe necesita 2 sobornos
-        
+        # Cargar imagenes escaladas; si no existe el asset, crear un fallback Surface
         if self.es_jefe:
-            self.image = cargar_imagen("congresista_jefe.png", (100, 100), (200, 0, 0)) # Rojo oscuro
-            # Fallback visual
-            if "congresista_jefe" not in self.image.get_at((0,0)):
-                pygame.draw.circle(self.image, DORADO, (50, 20), 10) # Corona
+            path = os.path.join("assets", "congresista_jefe.png")
+            if os.path.exists(path):
+                self.image = cargar_imagen("congresista_jefe.png", (s(100), s(100)), (200, 0, 0))
+            else:
+                self.image = pygame.Surface((s(100), s(100)), pygame.SRCALPHA)
+                self.image.fill((200, 0, 0))
+                # Dibujar corona simple como fallback
+                pygame.draw.circle(self.image, DORADO, (s(50), s(20)), s(10))
         else:
-            self.image = cargar_imagen("congresista_1.png", (90, 90), (100, 100, 100)) # Gris
+            path = os.path.join("assets", "congresista_1.png")
+            if os.path.exists(path):
+                self.image = cargar_imagen("congresista_1.png", (s(90), s(90)), (100, 100, 100))
+            else:
+                self.image = pygame.Surface((s(90), s(90)), pygame.SRCALPHA)
+                self.image.fill((100, 100, 100))
         
         self.rect = self.image.get_rect()
         self.rect.midbottom = (x, y)
-        
-        # Tiempo que permanece en pantalla antes de votar por vacancia
-        self.tiempo_vida = 120 if es_jefe else 80 # Frames (aprox 1.5 - 2 seg)
+
+        # Tiempo que permanece en pantalla antes de votar por vacancia (escalado)
+        base_jefe = int(120 * ui_scale())
+        base_regular = int(80 * ui_scale())
+        self.tiempo_vida = base_jefe if es_jefe else base_regular
         self.max_tiempo = self.tiempo_vida
 
     def update(self):
@@ -35,18 +47,18 @@ class Congresista(pygame.sprite.Sprite):
 def ejecutar_nivel():
     # Ocultar cursor y poner billete
     pygame.mouse.set_visible(False)
-    img_cursor = cargar_imagen("martillo_billete.png", (50, 50), VERDE)
+    img_cursor = cargar_imagen("billetes.jpg", (s(50), s(50)), VERDE)
     cursor_rect = img_cursor.get_rect()
     
     snd_grito = cargar_sonido("vacancia_grito.wav")
     snd_soborno = cargar_sonido("kaching_soborno.wav")
     
     # Posiciones de los curules (Escaños) en el Hemiciclo (Coordenadas X, Y)
-    # Organizamos en 3 filas
+    # Usar porcentajes de ancho/alto para que escale bien
     posiciones = [
-        (200, 300), (400, 300), (600, 300), # Fila Arriba
-        (150, 450), (300, 450), (500, 450), (650, 450), # Fila Medio
-        (250, 580), (550, 580) # Fila Abajo
+        (sx(0.125), sy(0.45)), (sx(0.375), sy(0.45)), (sx(0.625), sy(0.45)), # Fila Arriba
+        (sx(0.09), sy(0.6)), (sx(0.25), sy(0.6)), (sx(0.45), sy(0.6)), (sx(0.65), sy(0.6)), # Fila Medio
+        (sx(0.22), sy(0.78)), (sx(0.55), sy(0.78)) # Fila Abajo
     ]
     
     moles_group = pygame.sprite.Group()
@@ -64,7 +76,7 @@ def ejecutar_nivel():
     feedback_timer = 0
     
     # Fondo decorativo (Curules vacíos)
-    img_curul = cargar_imagen("curul.png", (100, 50), (139, 69, 19)) # Marrón madera
+    img_curul = cargar_imagen("curul.png", (s(100), s(50)), (139, 69, 19)) # Marrón madera
 
     while True:
         restante = tiempo_juego - (pygame.time.get_ticks() - start_ticks) / 1000
@@ -74,8 +86,8 @@ def ejecutar_nivel():
         # SPAWN LOGIC
         timer_spawn -= 1
         # Se pone más difícil (más rápido) mientras menos tiempo queda
-        rate_actual = max(20, int(spawn_rate * (restante / tiempo_juego)))
-        
+        rate_actual = max(int(20 * ui_scale()), int(spawn_rate * max(0.2, (restante / tiempo_juego))))
+
         if timer_spawn <= 0:
             timer_spawn = rate_actual
             
@@ -99,7 +111,8 @@ def ejecutar_nivel():
                 # Hit check
                 golpeados = [m for m in moles_group if m.rect.collidepoint(mouse_pos)]
                 if golpeados:
-                    target = golpeados[0] # Solo uno a la vez
+                    # Elegir el congresista que esté más al frente visualmente
+                    target = max(golpeados, key=lambda m: m.rect.bottom)
                     target.vida -= 1
                     
                     if target.vida <= 0:
@@ -127,28 +140,30 @@ def ejecutar_nivel():
         PANTALLA.fill((20, 20, 40)) # Fondo oscuro
         fondo = cargar_imagen("fondo_congreso.png", (ANCHO, ALTO), (30, 30, 30))
         PANTALLA.blit(fondo, (0,0))
-        
+
         # Dibujar curules de fondo en las posiciones
         for pos in posiciones:
             rect_c = img_curul.get_rect(midbottom=pos)
             PANTALLA.blit(img_curul, rect_c)
-        
+
         moles_group.draw(PANTALLA)
-        
+
         # Dibujar Cursor
         PANTALLA.blit(img_cursor, cursor_rect)
 
         # UI
         # Barra de Vacancia (Peligro)
-        # Fondo Barra
-        pygame.draw.rect(PANTALLA, NEGRO, (ANCHO//2 - 150, 20, 300, 30))
+        bar_w = s(300)
+        bar_h = s(30)
+        bar_x = ANCHO//2 - bar_w//2
+        bar_y = s(20)
+        pygame.draw.rect(PANTALLA, NEGRO, (bar_x, bar_y, bar_w, bar_h))
         # Relleno Barra (Rojo)
         pct_vacancia = votos_vacancia / meta_vacancia
-        pygame.draw.rect(PANTALLA, ROJO, (ANCHO//2 - 150, 20, 300 * pct_vacancia, 30))
-        
-        mostrar_texto(PANTALLA, f"VOTOS VACANCIA: {votos_vacancia}/87", 30, ANCHO//2 - 110, 25, BLANCO)
-        
-        mostrar_texto(PANTALLA, f"Tiempo: {int(restante)}s", 30, ANCHO - 150, 20)
+        pygame.draw.rect(PANTALLA, ROJO, (bar_x, bar_y, int(bar_w * pct_vacancia), bar_h))
+
+        mostrar_texto(PANTALLA, f"VOTOS VACANCIA: {votos_vacancia}/{meta_vacancia}", s(20), bar_x + s(10), bar_y + s(4), BLANCO)
+        mostrar_texto(PANTALLA, f"Tiempo: {int(restante)}s", s(20), ANCHO - s(150), s(8))
         
         if feedback_timer > 0:
             color = VERDE if "COMPRADO" in feedback_txt else ROJO

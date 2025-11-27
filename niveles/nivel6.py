@@ -1,4 +1,5 @@
 import pygame
+import os
 import random
 import sys
 from config import *
@@ -22,15 +23,24 @@ class Celda(pygame.sprite.Sprite):
         self.tamaño = tamaño
         self.conectado = False # Si fluye dinero por aquí
         
-        # Cargar imágenes base
+        # Cargar imágenes base (comprobar si el asset existe; si no, crear fallback)
         if tipo == RECTO:
-            self.img_base = cargar_imagen("tubo_recto.png", (tamaño, tamaño), (150, 150, 150))
-            # Dibujar línea si es placeholder
-            if "tubo_recto" not in self.img_base.get_at((0,0)):
+            ruta = os.path.join("assets", "tubo_recto.png")
+            if os.path.exists(ruta):
+                self.img_base = cargar_imagen("tubo_recto.png", (tamaño, tamaño), (150, 150, 150))
+            else:
+                # Fallback: superficie simple con recto dibujado
+                self.img_base = pygame.Surface((tamaño, tamaño), pygame.SRCALPHA)
+                self.img_base.fill((150, 150, 150))
                 pygame.draw.rect(self.img_base, (100,100,100), (tamaño//3, 0, tamaño//3, tamaño))
         else:
-            self.img_base = cargar_imagen("tubo_curvo.png", (tamaño, tamaño), (150, 150, 150))
-            if "tubo_curvo" not in self.img_base.get_at((0,0)):
+            ruta = os.path.join("assets", "tubo_curvo.png")
+            if os.path.exists(ruta):
+                self.img_base = cargar_imagen("tubo_curvo.png", (tamaño, tamaño), (150, 150, 150))
+            else:
+                # Fallback: superficie simple con curvo dibujado
+                self.img_base = pygame.Surface((tamaño, tamaño), pygame.SRCALPHA)
+                self.img_base.fill((150, 150, 150))
                 pygame.draw.rect(self.img_base, (100,100,100), (tamaño//3, tamaño//3, tamaño//3, 2*tamaño//3))
                 pygame.draw.rect(self.img_base, (100,100,100), (tamaño//3, tamaño//3, 2*tamaño//3, tamaño//3))
 
@@ -128,9 +138,10 @@ def ejecutar_nivel():
     snd_flujo = cargar_sonido("flujo.wav")
     
     filas, cols = 5, 6
-    tam_celda = 80
+    # Tamaño de celda escalable según pantalla y matriz
+    tam_celda = max(40, min((ANCHO - 100) // cols, (ALTO - 160) // filas))
     offset_x = (ANCHO - cols * tam_celda) // 2
-    offset_y = (ALTO - filas * tam_celda) // 2 + 30
+    offset_y = (ALTO - filas * tam_celda) // 2 + s(30)
     
     # Crear Matriz
     matriz = []
@@ -151,9 +162,9 @@ def ejecutar_nivel():
     
     ganado = False
     
-    # Imágenes decorativas
-    img_tesoro = cargar_imagen("tesoro.png", (100, 100), DORADO)
-    img_bolsillo = cargar_imagen("bolsillo.png", (100, 100), NEGRO)
+    # Imágenes decorativas (escaladas)
+    img_tesoro = cargar_imagen("perudinero.jpg", (s(100), s(100)), DORADO)
+    img_bolsillo = cargar_imagen("billetera.jpg", (s(100), s(100)), NEGRO)
 
     while True:
         restante = tiempo - (pygame.time.get_ticks() - start) / 1000
@@ -175,29 +186,29 @@ def ejecutar_nivel():
 
         # DIBUJAR
         PANTALLA.fill((30, 30, 30))
-        
+
         # Conexiones visuales externas
         # Tesoro -> (0,0)
-        PANTALLA.blit(img_tesoro, (offset_x - 90, offset_y - 20))
-        pygame.draw.line(PANTALLA, VERDE, (offset_x - 10, offset_y + 40), (offset_x, offset_y + 40), 10)
-        
+        PANTALLA.blit(img_tesoro, (offset_x - s(90), offset_y - s(20)))
+        pygame.draw.line(PANTALLA, VERDE, (offset_x - s(10), offset_y + s(40)), (offset_x, offset_y + s(40)), s(10))
+
         # (Final) -> Bolsillo
         fin_x = offset_x + cols * tam_celda
         fin_y = offset_y + (filas - 1) * tam_celda
-        pygame.draw.line(PANTALLA, VERDE if ganado else (100,100,100), (fin_x, fin_y + 40), (fin_x + 20, fin_y + 40), 10)
-        PANTALLA.blit(img_bolsillo, (fin_x + 20, fin_y - 10))
+        pygame.draw.line(PANTALLA, VERDE if ganado else (100,100,100), (fin_x, fin_y + s(40)), (fin_x + s(20), fin_y + s(40)), s(10))
+        PANTALLA.blit(img_bolsillo, (fin_x + s(20), fin_y - s(10)))
 
         grupo_sprites.draw(PANTALLA)
         
         # UI
-        mostrar_texto(PANTALLA, "CONECTA EL DESVÍO DE FONDOS", 40, ANCHO//2 - 200, 20, DORADO)
-        mostrar_texto(PANTALLA, f"Tiempo: {int(restante)}", 40, ANCHO - 150, 20)
-        
+        mostrar_texto(PANTALLA, "CONECTA EL DESVÍO DE FONDOS", s(36), ANCHO//2 - s(200), s(20), DORADO)
+        mostrar_texto(PANTALLA, f"Tiempo: {int(restante)}", s(24), ANCHO - s(150), s(20))
+
         if ganado:
-            mostrar_texto(PANTALLA, "¡CONEXIÓN ESTABLECIDA!", 50, ANCHO//2 - 200, ALTO - 80, VERDE)
+            mostrar_texto(PANTALLA, "¡CONEXIÓN ESTABLECIDA!", s(50), ANCHO//2 - s(200), ALTO - s(80), VERDE)
             # Pequeña espera para que el jugador vea su obra maestra
             pygame.display.flip()
-            pygame.time.wait(2000)
+            pygame.time.wait(s(2000) if hasattr(__builtins__, 'round') else 2000)
             return "GANASTE"
 
         if restante <= 0:

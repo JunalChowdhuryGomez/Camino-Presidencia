@@ -1,3 +1,4 @@
+import os
 import pygame
 import random
 import sys
@@ -7,19 +8,24 @@ from utils import *
 class AutoPresidencial(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = cargar_imagen("auto_presidencial.png", (120, 60), NEGRO)
-        # Fallback visual (Camioneta negra)
-        if "auto_presidencial" not in self.image.get_at((0,0)):
-            pygame.draw.rect(self.image, (50, 50, 50), (10, 10, 100, 40)) # Ventanas
-        
+        # Imagen del auto, escalada. Si no existe el asset, crear fallback
+        path = os.path.join("assets", "carro.png")
+        if os.path.exists(path):
+            self.image = cargar_imagen("carro.png", (s(120), s(60)), NEGRO)
+        else:
+            self.image = pygame.Surface((s(120), s(60)), pygame.SRCALPHA)
+            self.image.fill(NEGRO)
+            pygame.draw.rect(self.image, (50, 50, 50), (s(10), s(10), s(100), s(40)))  # Ventanas
+
         self.rect = self.image.get_rect()
-        self.rect.x = 100
-        self.base_y = ALTO - 100
+        self.rect.x = sx(0.08)  # posicion inicial proporcional
+        self.base_y = ALTO - s(100)
         self.rect.bottom = self.base_y
-        
+
+        # Física escalada
         self.velocidad_y = 0
-        self.gravedad = 0.8
-        self.fuerza_salto = -15
+        self.gravedad = 0.8 * ui_scale()
+        self.fuerza_salto = int(-15 * ui_scale())
         self.saltando = False
 
     def saltar(self):
@@ -46,26 +52,42 @@ class Obstaculo(pygame.sprite.Sprite):
         self.tipo = tipo # 0: Miguelito (Chico), 1: Fiscal (Medio), 2: Patrulla (Grande)
         
         if tipo == 0: # Miguelito
-            self.image = cargar_imagen("obs_miguelito.png", (40, 40), (200, 200, 200))
-            if "obs_miguelito" not in self.image.get_at((0,0)): # Dibujar pua
-                pygame.draw.polygon(self.image, (150, 150, 150), [(0, 40), (20, 0), (40, 40)])
+            path = os.path.join("assets", "obs_miguelito.png")
+            if os.path.exists(path):
+                self.image = cargar_imagen("obs_miguelito.png", (s(40), s(40)), (200, 200, 200))
+            else:
+                self.image = pygame.Surface((s(40), s(40)), pygame.SRCALPHA)
+                self.image.fill((200,200,200))
+                pygame.draw.polygon(self.image, (150,150,150), [(0, s(40)), (s(20), 0), (s(40), s(40))])
             self.rect = self.image.get_rect()
-            self.rect.bottom = ALTO - 80 # Pegado al suelo
+            self.rect.bottom = ALTO - s(80) # Pegado al suelo
             
         elif tipo == 1: # Fiscal
-            self.image = cargar_imagen("obs_fiscal.png", (50, 90), AZUL_POLICIA)
+            path = os.path.join("assets", "obs_fiscal.png")
+            if os.path.exists(path):
+                self.image = cargar_imagen("obs_fiscal.png", (s(50), s(90)), AZUL_POLICIA)
+            else:
+                self.image = pygame.Surface((s(50), s(90)), pygame.SRCALPHA)
+                self.image.fill(AZUL_POLICIA)
             self.rect = self.image.get_rect()
-            self.rect.bottom = ALTO - 80
+            self.rect.bottom = ALTO - s(80)
             
         else: # Patrulla
-            self.image = cargar_imagen("obs_patrulla.png", (100, 60), BLANCO)
-            if "obs_patrulla" not in self.image.get_at((0,0)):
-                pygame.draw.rect(self.image, VERDE, (0, 20, 100, 10)) # Franja policial
+            path = os.path.join("assets", "camionetapolicia.png")
+            if os.path.exists(path):
+                self.image = cargar_imagen("camionetapolicia.png", (s(100), s(60)), BLANCO)
+            else:
+                self.image = pygame.Surface((s(100), s(60)), pygame.SRCALPHA)
+                self.image.fill(BLANCO)
+                pygame.draw.rect(self.image, VERDE, (0, s(20), s(100), s(10)))  # Franja policial
             self.rect = self.image.get_rect()
-            self.rect.bottom = ALTO - 80
+            self.rect.bottom = ALTO - s(80)
 
-        self.rect.x = ANCHO + random.randint(0, 100)
-        self.velocidad = velocidad_scroll
+        # Posición inicial y velocidad horizontal (escaladas)
+        self.rect.x = ANCHO + random.randint(0, int(100 * ui_scale()))
+        self.velocidad = velocidad_scroll * ui_scale()
+
+    
 
     def update(self):
         self.rect.x -= self.velocidad
@@ -87,13 +109,13 @@ def ejecutar_nivel():
     todos.add(jugador)
     
     distancia = 0
-    meta_distancia = 1000 # Metros para llegar a la embajada
-    velocidad_juego = 8 # Velocidad inicial
+    meta_distancia = 1000  # Metros para llegar a la embajada
+    velocidad_juego = 8 * ui_scale()  # Velocidad inicial escalada
     
     start_ticks = pygame.time.get_ticks()
     timer_spawn = 0
     
-    fondo = cargar_imagen("fondo_carretera.png", (ANCHO, ALTO), (200, 180, 140)) # Color arena
+    fondo = cargar_imagen("carretera.jpg", (ANCHO, ALTO), (200, 180, 140)) # Color arena
     
     while True:
         # Aumentar dificultad progresiva
@@ -106,9 +128,10 @@ def ejecutar_nivel():
         # Generar obstaculos
         timer_spawn += 1
         # Random spawn rate basado en velocidad (a más rápido, aparecen más seguido)
-        if timer_spawn > max(30, 100 - int(velocidad_juego * 2)):
+        spawn_threshold = max(int(30 * ui_scale()), 100 - int(velocidad_juego * 2))
+        if timer_spawn > spawn_threshold:
             timer_spawn = 0
-            tipo = random.choice([0, 0, 1, 2]) # Más probabilidad de miguelitos
+            tipo = random.choice([0, 0, 1, 2])  # Más probabilidad de miguelitos
             obs = Obstaculo(tipo, velocidad_juego)
             obstaculos.add(obs)
             todos.add(obs)
@@ -136,21 +159,21 @@ def ejecutar_nivel():
 
         # Draw
         # Efecto Parallax simple (Fondo estático o moviéndose si tienes una imagen larga)
-        PANTALLA.blit(fondo, (0,0)) 
-        
+        PANTALLA.blit(fondo, (0,0))
+
         # Carretera
-        pygame.draw.rect(PANTALLA, (50, 50, 50), (0, ALTO-80, ANCHO, 80)) # Pista
-        pygame.draw.line(PANTALLA, (255, 255, 0), (0, ALTO-40), (ANCHO, ALTO-40), 4) # Linea amarilla
+        pygame.draw.rect(PANTALLA, (50, 50, 50), (0, ALTO - s(80), ANCHO, s(80)))  # Pista
+        pygame.draw.line(PANTALLA, (255, 255, 0), (0, ALTO - s(40)), (ANCHO, ALTO - s(40)), s(4))  # Linea amarilla
 
         todos.draw(PANTALLA)
-        
+
         # UI
-        mostrar_texto(PANTALLA, f"DISTANCIA A LA EMBAJADA: {int(meta_distancia - distancia)} m", 30, 20, 20, ROJO)
-        
+        mostrar_texto(PANTALLA, f"DISTANCIA A LA EMBAJADA: {int(meta_distancia - distancia)} m", s(20), s(20), s(20), ROJO)
+
         # Meta
         if distancia >= meta_distancia:
             if snd_sirena: snd_sirena.stop()
             return "GANASTE"
 
         pygame.display.flip()
-        RELOJ.tick(60)
+        RELOJ.tick(FPS)
