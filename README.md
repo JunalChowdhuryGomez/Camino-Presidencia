@@ -3,6 +3,12 @@
 
 > *"El único juego donde robar es una mecánica, no un bug."*
 
+## Integrantes:
+- Chodury Gómez, Junal  
+- Llanos Rosadio, José  
+- Zapata Inga, Janio  
+- Silva Rojas, Juan 
+
 Este es una colección de minijuegos satíricos desarrollados en **Python** y **Pygame** que simulan la caótica carrera política en el Perú. Desde recolectar firmas falsas a cambio de gaseosas, hasta escapar de la justicia en el auto presidencial.
 
 ## 🎮 Descripción
