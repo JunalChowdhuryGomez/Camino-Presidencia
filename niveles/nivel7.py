@@ -54,9 +54,9 @@ def ejecutar_nivel():
     mira_rect = img_mira.get_rect()
 
     # Sonidos
-    snd_disparo = cargar_sonido("disparo_gas.wav")
-    snd_acierto = cargar_sonido("grito_impacto.wav")
-    snd_error_terna = cargar_sonido("radio_policia.wav")
+    snd_disparo = cargar_sonido("disparo_gas.mp3")
+    snd_acierto = cargar_sonido("grito_impacto.mp3")
+    snd_error_terna = cargar_sonido("radio_policia.mp3")
 
     objetivos = pygame.sprite.Group()
 

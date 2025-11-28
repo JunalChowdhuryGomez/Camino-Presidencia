@@ -78,8 +78,8 @@ class TaperVolador(pygame.sprite.Sprite):
 
 def ejecutar_nivel():
     # Sonidos
-    snd_camion = cargar_sonido("camion.wav")
-    snd_moneda = cargar_sonido("punto.wav")
+    snd_camion = cargar_sonido("taper.mp3")
+    snd_moneda = cargar_sonido("punto.mp3")
     
     # Definir Regiones (Simulando un mapa)
     # Costa (Izquierda), Sierra (Centro), Selva (Derecha)

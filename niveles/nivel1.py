@@ -49,8 +49,8 @@ class Peaton(pygame.sprite.Sprite):
             self.kill()
 
 def ejecutar_nivel():
-    snd_firma = cargar_sonido("firma.wav")
-    snd_policia = cargar_sonido("error.wav")
+    snd_firma = cargar_sonido("firma.mp3")
+    snd_policia = cargar_sonido("error.mp3")
     
     jugador = Candidato()
     peatones = pygame.sprite.Group()

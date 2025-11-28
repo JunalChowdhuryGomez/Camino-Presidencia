@@ -135,7 +135,7 @@ def verificar_flujo(matriz, filas, cols):
     return llego_al_final
 
 def ejecutar_nivel():
-    snd_flujo = cargar_sonido("flujo.wav")
+    snd_flujo = cargar_sonido("cumbia_fondo.mp3")
     
     filas, cols = 5, 6
     # Tamaño de celda escalable según pantalla y matriz
