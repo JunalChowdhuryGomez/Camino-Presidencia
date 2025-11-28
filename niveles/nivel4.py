@@ -48,18 +48,19 @@ class Region(pygame.sprite.Sprite):
         pygame.draw.rect(pantalla, BLANCO, self.rect, 3, border_radius=15)
         
         # Texto de estado
-        mostrar_texto(pantalla, self.nombre, 30, self.rect.x + 20, self.rect.y + 20, BLANCO)
-        mostrar_texto(pantalla, f"{int(self.votos)}%", 50, self.rect.centerx - 20, self.rect.centery - 15, BLANCO)
+        mostrar_texto(pantalla, self.nombre, s(24), self.rect.x + s(12), self.rect.y + s(12), BLANCO)
+        mostrar_texto(pantalla, f"{int(self.votos)}%", s(36), self.rect.centerx - s(20), self.rect.centery - s(10), BLANCO)
 
 class TaperVolador(pygame.sprite.Sprite):
     def __init__(self, target_pos):
         super().__init__()
-        self.image = cargar_imagen("icono_taper.png", (40, 40), NARANJA)
+        tamaño = s(40)
+        self.image = cargar_imagen("taper.png", (tamaño, tamaño), NARANJA)
         self.rect = self.image.get_rect()
         # Sale desde abajo (Lima/Capital)
         self.rect.centerx = ANCHO // 2
         self.rect.bottom = ALTO
-        
+
         self.target = target_pos
         self.velocidad = 15
 
@@ -82,10 +83,11 @@ def ejecutar_nivel():
     
     # Definir Regiones (Simulando un mapa)
     # Costa (Izquierda), Sierra (Centro), Selva (Derecha)
+    # Posiciones escalables basadas en proporciones (basado en 800x600 referencia)
     regiones = [
-        Region("COSTA", 50, 100, 200, 300),
-        Region("SIERRA", 280, 100, 200, 300),
-        Region("SELVA", 510, 100, 200, 300)
+        Region("COSTA", sx(0.0625), sy(0.1667), sx(0.25), sy(0.5)),
+        Region("SIERRA", sx(0.35), sy(0.1667), sx(0.25), sy(0.5)),
+        Region("SELVA", sx(0.6375), sy(0.1667), sx(0.25), sy(0.5))
     ]
     
     tapers_group = pygame.sprite.Group()
@@ -135,19 +137,23 @@ def ejecutar_nivel():
         # Dibujar regiones
         for reg in regiones: reg.dibujar(PANTALLA)
         tapers_group.draw(PANTALLA)
-        
+
         # UI Superior
-        pygame.draw.rect(PANTALLA, NEGRO, (0, 0, ANCHO, 80))
-        mostrar_texto(PANTALLA, f"Presupuesto: S/. {presupuesto} M", 30, 20, 20, VERDE)
-        mostrar_texto(PANTALLA, f"Tiempo: {int(restante)}s", 30, ANCHO - 150, 20, BLANCO)
-        
+        pygame.draw.rect(PANTALLA, NEGRO, (0, 0, ANCHO, s(80)))
+        mostrar_texto(PANTALLA, f"Presupuesto: S/. {presupuesto} M", s(20), s(20), s(12), VERDE)
+        mostrar_texto(PANTALLA, f"Tiempo: {int(restante)}s", s(20), ANCHO - s(150), s(12), BLANCO)
+
         # Barra Promedio Nacional
-        mostrar_texto(PANTALLA, "PROMEDIO NACIONAL:", 20, 300, 10)
-        pygame.draw.rect(PANTALLA, ROJO, (300, 35, 200, 20)) # Fondo Rojo
-        ancho_naranja = int((promedio_votos / 100) * 200)
-        pygame.draw.rect(PANTALLA, NARANJA, (300, 35, ancho_naranja, 20)) # Barra Naranja
-        
-        mostrar_texto(PANTALLA, mensaje, 25, 20, ALTO - 40, DORADO)
+        mostrar_texto(PANTALLA, "PROMEDIO NACIONAL:", s(18), sx(0.375), s(10))
+        barra_x = sx(0.375)
+        barra_y = s(35)
+        barra_w = sx(0.25)
+        barra_h = s(20)
+        pygame.draw.rect(PANTALLA, ROJO, (barra_x, barra_y, barra_w, barra_h)) # Fondo Rojo
+        ancho_naranja = int((promedio_votos / 100) * barra_w)
+        pygame.draw.rect(PANTALLA, NARANJA, (barra_x, barra_y, ancho_naranja, barra_h)) # Barra Naranja
+
+        mostrar_texto(PANTALLA, mensaje, s(20), s(20), ALTO - s(40), DORADO)
 
         # Condiciones Fin
         if restante <= 0:

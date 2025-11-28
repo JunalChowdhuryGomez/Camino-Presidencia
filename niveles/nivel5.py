@@ -1,4 +1,5 @@
 import pygame
+import os
 import random
 import sys
 from config import *
@@ -9,16 +10,25 @@ class Acta(pygame.sprite.Sprite):
         super().__init__()
         self.es_mia = es_mia # True (Naranja) o False (Rival)
         
+        tamaño_acta = (s(100), s(140))
         if self.es_mia:
-            self.image = cargar_imagen("acta_naranja.png", (100, 140), (255, 200, 150))
-            # Dibujamos una marquita naranja si no hay imagen
-            if "acta_naranja" not in self.image.get_at((0,0)): # Fallback visual simple
-                pygame.draw.circle(self.image, NARANJA, (50, 70), 20)
+            ruta_img = os.path.join("assets", "FuerzaPopular.png")
+            if os.path.exists(ruta_img):
+                self.image = cargar_imagen("FuerzaPopular.png", tamaño_acta, (255, 200, 150))
+            else:
+                # Fallback: superficie simple con marca naranja
+                self.image = pygame.Surface(tamaño_acta, pygame.SRCALPHA)
+                self.image.fill((255, 200, 150))
+                pygame.draw.circle(self.image, NARANJA, (tamaño_acta[0]//2, tamaño_acta[1]//2), s(20))
         else:
-            self.image = cargar_imagen("acta_roja.png", (100, 140), (200, 200, 200))
-            # Marquita roja
-            if "acta_roja" not in self.image.get_at((0,0)):
-                pygame.draw.circle(self.image, ROJO, (50, 70), 20)
+            ruta_img = os.path.join("assets", "peruLibre.png")
+            if os.path.exists(ruta_img):
+                self.image = cargar_imagen("peruLibre.png", tamaño_acta, (200, 200, 200))
+            else:
+                # Fallback: superficie simple con marca roja
+                self.image = pygame.Surface(tamaño_acta, pygame.SRCALPHA)
+                self.image.fill((200, 200, 200))
+                pygame.draw.circle(self.image, ROJO, (tamaño_acta[0]//2, tamaño_acta[1]//2), s(20))
 
         self.rect = self.image.get_rect()
         self.rect.centerx = ANCHO // 2
@@ -50,15 +60,15 @@ def ejecutar_nivel():
     # Ritmo de aparición
     timer_spawn = 0
     
-    img_sello_ok = cargar_imagen("sello_ok.png", (120, 120), VERDE)
-    img_sello_fail = cargar_imagen("sello_nulo.png", (120, 120), ROJO)
+    img_sello_ok = cargar_imagen("sello_ok.png", (s(120), s(120)), VERDE)
+    img_sello_fail = cargar_imagen("sello_nulo.png", (s(120), s(120)), ROJO)
 
     while True:
         restante = tiempo - (pygame.time.get_ticks() - start) / 1000
         
         # Generar actas
         timer_spawn += 1
-        if timer_spawn > 40: # Cada X frames sale una nueva
+        if timer_spawn > max(20, int(40 * ui_scale())): # Cada X frames sale una nueva (escalado)
             es_mia = random.choice([True, False])
             nueva_acta = Acta(es_mia)
             actas_group.add(nueva_acta)
@@ -141,16 +151,16 @@ def ejecutar_nivel():
         # DIBUJAR
         # Fondo: Mesa de madera
         PANTALLA.fill((100, 60, 20)) 
-        
+
         # Faja transportadora (Gris oscuro al centro)
-        pygame.draw.rect(PANTALLA, (50, 50, 50), (ANCHO//2 - 60, 0, 120, ALTO))
-        
+        pygame.draw.rect(PANTALLA, (50, 50, 50), (ANCHO//2 - s(60), 0, s(120), ALTO))
+
         # Zona de validación (Línea verde)
-        pygame.draw.line(PANTALLA, VERDE, (0, ALTO - 150), (ANCHO, ALTO - 150), 2)
-        mostrar_texto(PANTALLA, "ZONA DE SELLADO", 20, ANCHO//2 - 60, ALTO - 140)
+        pygame.draw.line(PANTALLA, VERDE, (0, ALTO - s(150)), (ANCHO, ALTO - s(150)), s(2))
+        mostrar_texto(PANTALLA, "ZONA DE SELLADO", s(18), ANCHO//2 - s(60), ALTO - s(140))
 
         actas_group.draw(PANTALLA)
-        
+
         # Dibujar Sello Visual (Efecto temporal)
         if sello_visual:
             img, x, y, frames = sello_visual
@@ -160,9 +170,9 @@ def ejecutar_nivel():
 
         # UI
         # Instrucciones
-        mostrar_texto(PANTALLA, "← VALIDAR (Izquierda)", 40, 50, ALTO//2, VERDE)
-        mostrar_texto(PANTALLA, "IMPUGNAR (Derecha) →", 40, ANCHO - 350, ALTO//2, ROJO)
-        
+        mostrar_texto(PANTALLA, "← VALIDAR (Izquierda)", s(28), s(50), ALTO//2, VERDE)
+        mostrar_texto(PANTALLA, "IMPUGNAR (Derecha) →", s(28), ANCHO - s(350), ALTO//2, ROJO)
+
         # Cálculo de Porcentaje en Tiempo Real
         # Porcentaje = (Mis Votos / Votos Totales) * 100
         # Evitar división por cero
@@ -171,13 +181,13 @@ def ejecutar_nivel():
         else:
             porcentaje = 50.0 # Empate inicial
 
-        pygame.draw.rect(PANTALLA, NEGRO, (0, 0, ANCHO, 80))
-        mostrar_texto(PANTALLA, f"ACTAS PROCESADAS: {votos_mios}/{votos_totales}", 30, 20, 20)
-        mostrar_texto(PANTALLA, f"TU PORCENTAJE: {porcentaje:.2f}%", 40, ANCHO//2 - 150, 20, NARANJA if porcentaje > 50.1 else ROJO)
-        mostrar_texto(PANTALLA, f"Tiempo: {int(restante)}", 30, ANCHO - 120, 20)
-        
+        pygame.draw.rect(PANTALLA, NEGRO, (0, 0, ANCHO, s(80)))
+        mostrar_texto(PANTALLA, f"ACTAS PROCESADAS: {votos_mios}/{votos_totales}", s(20), s(20), s(12))
+        mostrar_texto(PANTALLA, f"TU PORCENTAJE: {porcentaje:.2f}%", s(36), ANCHO//2 - s(150), s(12), NARANJA if porcentaje > 50.1 else ROJO)
+        mostrar_texto(PANTALLA, f"Tiempo: {int(restante)}", s(20), ANCHO - s(120), s(12))
+
         # Mensaje Feedback
-        mostrar_texto(PANTALLA, mensaje_feedback, 30, ANCHO//2 - 150, ALTO - 50, color_feedback)
+        mostrar_texto(PANTALLA, mensaje_feedback, s(20), ANCHO//2 - s(150), ALTO - s(50), color_feedback)
 
         # Condiciones Fin
         if restante <= 0:

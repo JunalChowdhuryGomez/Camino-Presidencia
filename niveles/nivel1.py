@@ -7,11 +7,11 @@ from utils import *
 class Candidato(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        self.image = cargar_imagen("candidato.png", (60, 90), NARANJA)
+        self.image = cargar_imagen("candidato.png", (250, 250), NARANJA)
         self.rect = self.image.get_rect()
         self.rect.centerx = ANCHO // 2
         self.rect.bottom = ALTO - 50
-        self.velocidad = 6
+        self.velocidad = 15
         self.cooldown_soborno = 0
 
     def update(self):
@@ -26,15 +26,15 @@ class Candidato(pygame.sprite.Sprite):
 class Peaton(pygame.sprite.Sprite):
     def __init__(self):
         super().__init__()
-        es_policia = random.random() < 0.25
+        es_policia = random.random() < 0.30
         if es_policia:
             self.tipo = "policia"
-            self.image = cargar_imagen("policia.png", (50, 90), AZUL_POLICIA)
-            self.velocidad = 5
+            self.image = cargar_imagen("policia.png", (250, 250), AZUL_POLICIA)
+            self.velocidad = 12
         else:
             self.tipo = "ciudadano"
-            self.image = cargar_imagen("ciudadano.png", (50, 90), VERDE)
-            self.velocidad = 3
+            self.image = cargar_imagen("peruano.png", (250, 250), VERDE)
+            self.velocidad = 10
         
         self.rect = self.image.get_rect()
         if random.choice([True, False]):
@@ -71,15 +71,23 @@ def ejecutar_nivel():
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_F1: return "GANASTE"
                 if event.key == pygame.K_SPACE and jugador.cooldown_soborno == 0:
-                    hits = pygame.sprite.spritecollide(jugador, peatones, True)
+                    # Obtener todos los peatones en colisión pero no matarlos aún
+                    hits = pygame.sprite.spritecollide(jugador, peatones, False)
                     if hits:
                         jugador.cooldown_soborno = 30
-                        p = hits[0]
+                        # Elegir el peatón que esté visualmente al frente (mayor rect.bottom)
+                        p = max(hits, key=lambda q: q.rect.bottom)
+                        # Eliminar solamente al seleccionado
+                        p.kill()
                         if p.tipo == "ciudadano":
-                            firmas += 1; mensaje_feedback = "+1 FIRMA"; timer_feedback = 30
+                            firmas += 1
+                            mensaje_feedback = "+1 FIRMA"
+                            timer_feedback = 30
                             if snd_firma: snd_firma.play()
                         else:
-                            firmas -= 2; mensaje_feedback = "¡POLICÍA!"; timer_feedback = 60
+                            firmas -= 2
+                            mensaje_feedback = "¡POLICÍA!"
+                            timer_feedback = 60
                             if snd_policia: snd_policia.play()
         
         todos.update()

@@ -27,7 +27,29 @@ def cargar_sonido(nombre):
 
 # Función para mostrar texto rápido
 def mostrar_texto(pantalla, texto, tamaño, x, y, color=BLANCO):
-    fuente = pygame.font.Font(None, tamaño)
+    """Renderiza texto intentando usar una fuente del sistema con buen soporte Unicode
+
+    Intenta encontrar DejaVu/Noto/Arial (común en Linux) para asegurar que símbolos
+    como flechas Unicode se muestren correctamente. Si no encuentra ninguna, cae
+    al font por defecto (None).
+    """
+    # Lista de nombres a buscar (orden de preferencia)
+    candidatos = ["DejaVuSans", "DejaVu Sans", "NotoSans", "Noto Sans", "Arial"]
+    ruta_fuente = None
+    for nombre in candidatos:
+        try:
+            ruta = pygame.font.match_font(nombre)
+        except Exception:
+            ruta = None
+        if ruta:
+            ruta_fuente = ruta
+            break
+
+    if ruta_fuente:
+        fuente = pygame.font.Font(ruta_fuente, tamaño)
+    else:
+        fuente = pygame.font.Font(None, tamaño)
+
     superficie = fuente.render(texto, True, color)
     rect = superficie.get_rect()
     rect.topleft = (x, y)
@@ -60,3 +82,34 @@ def pantalla_intro(nivel, titulo, descripcion):
         pygame.display.flip()
         RELOJ.tick(15)
     return "JUGAR"
+
+
+# --- Helpers de UI escalable ---
+def ui_scale():
+    """Factor de escala basado en una referencia de 800x600.
+
+    Usar este factor para ajustar tamaños y posiciones relativas a la pantalla.
+    """
+    try:
+        return min(ANCHO / 800.0, ALTO / 600.0)
+    except Exception:
+        return 1.0
+
+
+def s(valor):
+    """Escala un valor numérico entero según ui_scale() y devuelve int."""
+    return max(1, int(round(valor * ui_scale())))
+
+
+def sx(pct):
+    """Devuelve la coordenada X relativa en pixeles (pct es 0..1 o 0..100)."""
+    if pct > 1:
+        pct = pct / 100.0
+    return int(ANCHO * pct)
+
+
+def sy(pct):
+    """Devuelve la coordenada Y relativa en pixeles (pct es 0..1 o 0..100)."""
+    if pct > 1:
+        pct = pct / 100.0
+    return int(ALTO * pct)

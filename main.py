@@ -8,8 +8,8 @@ from niveles import nivel1, nivel2, nivel3, nivel4, nivel5, nivel6, nivel7, nive
 
 def mostrar_mensaje_final(texto, subtexto, color):
     PANTALLA.fill(NEGRO)
-    mostrar_texto(PANTALLA, texto, 60, ANCHO//2 - 200, ALTO//2 - 50, color)
-    mostrar_texto(PANTALLA, subtexto, 30, ANCHO//2 - 250, ALTO//2 + 20, BLANCO)
+    mostrar_texto(PANTALLA, texto, 60, ANCHO//3 - 200, ALTO//3 - 50, color)
+    mostrar_texto(PANTALLA, subtexto, 30, ANCHO//3 - 250, ALTO//3 + 20, BLANCO)
     pygame.display.flip()
     pygame.time.wait(3000)
 
@@ -24,7 +24,7 @@ def pantalla_final(resultado):
     
     if resultado == "VICTORIA":
         # Final Bueno: Asilo Político
-        imagen = cargar_imagen("final_playa.png", (ANCHO, ALTO), (0, 200, 255)) # Azul cielo
+        imagen = cargar_imagen("alan.jpg", (ANCHO, ALTO), (0, 200, 255)) # Azul cielo
         musica_fondo = cargar_sonido("musica_victoria.mp3") # Algo caribeño
         titulo = "¡LO LOGRASTE!"
         texto1 = "Te asilaste en una embajada amiga."
@@ -32,7 +32,7 @@ def pantalla_final(resultado):
         color_titulo = DORADO
     else:
         # Final Malo: Cárcel
-        imagen = cargar_imagen("final_carcel.png", (ANCHO, ALTO), (50, 50, 50)) # Gris rejas
+        imagen = cargar_imagen("expresidentes.jpeg", (ANCHO, ALTO), (50, 50, 50)) # Gris rejas
         musica_fondo = cargar_sonido("musica_triste.mp3") # Violín triste
         titulo = "PRISIÓN PREVENTIVA"
         texto1 = "Te dictaron 36 meses mientras investigan."
