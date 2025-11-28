@@ -1,8 +1,8 @@
 import pygame
 
 # Dimensiones
-ANCHO = 1920
-ALTO = 1080
+ANCHO = 1200
+ALTO = 750
 FPS = 60
 
 # Colores (Paleta Peruana)
