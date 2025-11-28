@@ -52,9 +52,9 @@ class Obstaculo(pygame.sprite.Sprite):
         self.tipo = tipo # 0: Miguelito (Chico), 1: Fiscal (Medio), 2: Patrulla (Grande)
         
         if tipo == 0: # Miguelito
-            path = os.path.join("assets", "obs_miguelito.png")
+            path = os.path.join("assets", "camionetapolicia.png")
             if os.path.exists(path):
-                self.image = cargar_imagen("obs_miguelito.png", (s(40), s(40)), (200, 200, 200))
+                self.image = cargar_imagen("camionetapolicia.png", (s(40), s(40)), (200, 200, 200))
             else:
                 self.image = pygame.Surface((s(40), s(40)), pygame.SRCALPHA)
                 self.image.fill((200,200,200))
@@ -63,9 +63,9 @@ class Obstaculo(pygame.sprite.Sprite):
             self.rect.bottom = ALTO - s(80) # Pegado al suelo
             
         elif tipo == 1: # Fiscal
-            path = os.path.join("assets", "obs_fiscal.png")
+            path = os.path.join("assets", "camionetapolicia.png")
             if os.path.exists(path):
-                self.image = cargar_imagen("obs_fiscal.png", (s(50), s(90)), AZUL_POLICIA)
+                self.image = cargar_imagen("camionetapolicia.png", (s(50), s(90)), AZUL_POLICIA)
             else:
                 self.image = pygame.Surface((s(50), s(90)), pygame.SRCALPHA)
                 self.image.fill(AZUL_POLICIA)

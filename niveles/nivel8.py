@@ -12,18 +12,18 @@ class Congresista(pygame.sprite.Sprite):
         self.vida = 2 if es_jefe else 1 # El jefe necesita 2 sobornos
         # Cargar imagenes escaladas; si no existe el asset, crear un fallback Surface
         if self.es_jefe:
-            path = os.path.join("assets", "congresista_jefe.png")
+            path = os.path.join("assets", "Corrupto.png")
             if os.path.exists(path):
-                self.image = cargar_imagen("congresista_jefe.png", (s(100), s(100)), (200, 0, 0))
+                self.image = cargar_imagen("Corrupto.png", (s(100), s(100)), (200, 0, 0))
             else:
                 self.image = pygame.Surface((s(100), s(100)), pygame.SRCALPHA)
                 self.image.fill((200, 0, 0))
                 # Dibujar corona simple como fallback
                 pygame.draw.circle(self.image, DORADO, (s(50), s(20)), s(10))
         else:
-            path = os.path.join("assets", "congresista_1.png")
+            path = os.path.join("assets", "Corrupto.png")
             if os.path.exists(path):
-                self.image = cargar_imagen("congresista_1.png", (s(90), s(90)), (100, 100, 100))
+                self.image = cargar_imagen("Corrupto.png", (s(90), s(90)), (100, 100, 100))
             else:
                 self.image = pygame.Surface((s(90), s(90)), pygame.SRCALPHA)
                 self.image.fill((100, 100, 100))
